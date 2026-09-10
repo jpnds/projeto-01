@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Projeto 01
 
-## Getting Started
+Aplicação web construída com **Next.js 16 (App Router)**, **React 19** e **TypeScript**, seguindo uma arquitetura server-first com separação clara entre UI, lógica de negócio e acesso a dados.
 
-First, run the development server:
+> Projeto em estágio inicial (scaffold). A estrutura de pastas e convenções abaixo definem o padrão a ser seguido conforme as páginas forem implementadas.
+
+## Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **UI:** React 19 + TypeScript
+- **Estilização:** TailwindCSS 4 + shadcn/ui
+- **Formulários e validação:** React Hook Form + Zod
+- **Lint:** ESLint (eslint-config-next)
+
+## Pré-requisitos
+
+- Node.js 18+
+- npm
+
+## Como rodar
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000) no navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts disponíveis
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando           | Descrição                          |
+| ------------------ | ----------------------------------- |
+| `npm run dev`       | Inicia o servidor de desenvolvimento (porta 3000) |
+| `npm run build`     | Gera o build de produção            |
+| `npm run start`     | Inicia o servidor em modo produção  |
+| `npm run lint`      | Roda o ESLint                       |
 
-## Learn More
+## Arquitetura
 
-To learn more about Next.js, take a look at the following resources:
+O projeto usa **App Router** com Server Components por padrão. Componentes só devem usar `"use client"` quando precisarem de hooks, eventos ou APIs de navegador.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/                  # Rotas (App Router), agrupadas por (grupo/)
+  <rota>/
+    page.tsx          # Server Component (entrada da página)
+    _components/      # Componentes específicos da página
+    _actions/          # Server Actions ("use server")
+    _data-access/      # Data Access Layer (busca de dados)
+components/
+  ui/                 # Primitivos reutilizáveis (shadcn/ui)
+  ...                 # Componentes de feature compartilhados
+lib/                  # Helpers, clients (Supabase, Stripe), configurações
+types/                # Tipos globais e schemas Zod compartilhados
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Camadas por página
 
-## Deploy on Vercel
+- **`page.tsx`** — Server Component; busca dados via `_data-access`, valida autenticação e repassa para os componentes client.
+- **`_components/`** — componentes da página (privados, não geram rota); interatividade e estado ficam aqui via Client Components.
+- **`_actions/`** — Server Actions (`"use server"`) responsáveis por mutações, validadas com Zod.
+- **`_data-access/`** — funções server-only de leitura de dados, encapsulando queries e verificação de permissões.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Mutações **nunca** acessam o banco diretamente a partir de Client Components — sempre passam por Server Actions.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Convenções de código
+
+- Sem `any` explícito — usar `unknown` + type guard.
+- Imports via ES modules (sem `require`).
+- Estilização apenas com Tailwind (sem CSS inline ou styled-components); novos design tokens vão em `tailwind.config.ts` antes de usar.
+- Arquivos em kebab-case; componentes React em PascalCase.
+- Handlers de evento prefixados com `handle` (`handleClick`, `handleSubmit`); booleanos com verbo (`isLoading`, `hasError`); hooks customizados com `use`.
+- Formulários seguem o padrão shadcn/ui + React Hook Form + Zod.
+
+## Variáveis de ambiente
+
+- Copie `.env.example` para `.env.local` ao clonar o projeto.
+- `NEXT_PUBLIC_*` apenas para valores seguros no client.
+- Segredos (banco de dados, API keys) só em Server Actions ou Route Handlers.
+
+## Workflow de contribuição
+
+- Branches: `feat/`, `fix/`, `chore/` + descrição em kebab-case.
+- Commits em inglês, no imperativo (ex.: `add OAuth callback handler`).
+- Após alterações, rodar `npm run lint` (e `type-check`, quando disponível) antes de commitar.
+
+## Saiba mais
+
+- [Documentação do Next.js](https://nextjs.org/docs)
+- [shadcn/ui — Forms com React Hook Form](https://ui.shadcn.com/docs/forms/react-hook-form)
